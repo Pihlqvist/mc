@@ -1,0 +1,155 @@
+<svg	xmlns="http://www.w3.org/2000/svg"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	width="2.0in" height="1.4in"
+	viewBox="6327 5227 2383 1708">
+<g style="stroke-width:.025in; fill:none">
+<!-- Arc -->
+<path style="stroke:#000000;stroke-width:11;stroke-linecap:butt;"
+d="M 8100,6412 A 208 208  0  1  1  8100  6547 " />
+<!-- Arrowhead on XXXpoint 8250 6682 - 8100 6547-->
+<polygon points="8281 6649
+8118 6564
+8221 6717
+8281 6649
+
+" style="stroke:#000000;stroke-width:11;stroke-miterlimit:8;
+fill:white;"/>
+<!-- Circle -->
+<circle cx="6885" cy="6480" r="151"
+ style="stroke:#000000;stroke-width:11;"/>
+<!-- Circle -->
+<circle cx="7965" cy="6480" r="151"
+ style="stroke:#000000;stroke-width:11;"/>
+<!-- Circle -->
+<circle cx="7425" cy="5670" r="151"
+ style="stroke:#000000;stroke-width:11;"/>
+<!-- Line -->
+<polyline points="6952,6345
+7249,5947
+" style="stroke:#000000;stroke-width:11;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 6952 6345 - 7369 5785-->
+<polygon points="7282 5976
+7354 5805
+7210 5922
+7282 5976
+
+" style="stroke:#000000;stroke-width:11;stroke-miterlimit:8;
+fill:white;"/>
+<!-- Line -->
+<polyline points="7492,5805
+7789,6201
+" style="stroke:#000000;stroke-width:11;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 7492 5805 - 7909 6363-->
+<polygon points="7750 6225
+7894 6343
+7822 6171
+7750 6225
+
+" style="stroke:#000000;stroke-width:11;stroke-miterlimit:8;
+fill:white;"/>
+<!-- Line -->
+<polyline points="6345,6480
+6570,6480
+" style="stroke:#000000;stroke-width:11;
+stroke-linejoin:miter; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 6345 6480 - 6772 6480-->
+<polygon points="6568 6525
+6748 6480
+6568 6435
+6568 6525
+
+" style="stroke:#000000;stroke-width:11;stroke-miterlimit:8;
+fill:white;"/>
+<!-- Line -->
+<polyline points="7020,6547
+7023,6550
+7029,6556
+7039,6565
+7053,6579
+7072,6595
+7095,6615
+7122,6636
+7149,6657
+7179,6676
+7212,6696
+7246,6712
+7285,6727
+7327,6739
+7375,6747
+7425,6750
+7474,6747
+7522,6739
+7564,6727
+7603,6712
+7638,6696
+7671,6676
+7701,6657
+7729,6636
+7755,6615
+7777,6595
+7797,6579
+7699,6670
+" style="stroke:#000000;stroke-width:11;
+stroke-linejoin:bevel; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 7797 6579 - 7845 6531-->
+<polygon points="7732 6706
+7828 6547
+7668 6642
+7732 6706
+
+" style="stroke:#000000;stroke-width:11;stroke-miterlimit:8;
+fill:white;"/>
+<!-- Line -->
+<polyline points="7830,6412
+7827,6409
+7821,6403
+7810,6394
+7797,6381
+7777,6364
+7755,6345
+7729,6324
+7701,6303
+7671,6283
+7638,6264
+7603,6247
+7564,6232
+7522,6220
+7474,6213
+7425,6210
+7375,6213
+7327,6220
+7285,6232
+7246,6247
+7212,6264
+7179,6283
+7149,6303
+7122,6324
+7095,6345
+7072,6364
+7053,6381
+7149,6288
+" style="stroke:#000000;stroke-width:11;
+stroke-linejoin:bevel; stroke-linecap:butt;
+"/>
+<!-- Arrowhead on XXXpoint 7053 6381 - 7003 6427-->
+<polygon points="7120 6253
+7021 6411
+7183 6319
+7120 6253
+
+" style="stroke:#000000;stroke-width:11;stroke-miterlimit:8;
+fill:white;"/>
+<!-- Text -->
+<text xml:space="preserve" x="7425" y="5467" fill="#000000"  font-family="Times"  font-style="italic" font-weight="normal" font-size="217" text-anchor="middle">a<tspan font-style="normal">&#172;</tspan>b</text>
+<!-- Text -->
+<text xml:space="preserve" x="7965" y="6817" fill="#000000"  font-family="Times"  font-style="italic" font-weight="normal" font-size="217" text-anchor="middle"><tspan font-style="normal">&#172;</tspan>ab</text>
+<!-- Text -->
+<text xml:space="preserve" x="6750" y="6817" fill="#000000"  font-family="Times"  font-style="italic" font-weight="normal" font-size="217" text-anchor="middle">ab</text>
+</g>
+</svg>
