@@ -16,7 +16,7 @@ ASSIGN
   esac;
 
   init (acc_payment) := FALSE;
-  next (acc_payment) := (state = expect_payment & payment);
+  next (acc_payment) := (state = expect_payment & payment & choice);
 
 DEFINE
   release_item := (state = dispense_item);
@@ -33,18 +33,21 @@ LTLSPEC
 --    payment = FALSE
 --    acc_payment = FALSE // Initiated as false
 --    state = ready // Initiated as true
---    release_item = FALSE
+--    release_item = FALSE // False because state != dispense_item
 --  -> State: 1.2 <-
---    choice = TRUE
+--    choice = TRUE // Choice is toggled, nothing happens
 --  -> State: 1.3 <-
---    choice = FALSE
---    payment = TRUE
---    state = expect_payment
+--    choice = FALSE // is toggled again back to false.
+--    payment = TRUE // is toggled to TRUE. Costumer has
+--    state = expect_payment // Because choice == True in 1.2 and state == ready,
+--          we continue to state expect_payment
 --  -> State: 1.4 <-
---    payment = FALSE
---    acc_payment = TRUE
---    state = ready
+--    payment = FALSE // toggled to false
+--    acc_payment = TRUE // set to true because state == expect_payment from 1.3 and payment = TRUE from 1.3
+--    state = ready //Because choice == false from 1.3 and state == expect_payment from 1.3, we are placed in ready.
 --  -- Loop starts here
 --  -> State: 1.5 <-
 --  -> State: 1.6 <-
 --    acc_payment = FALSE
+-- // Because acc_payment was never affected by having made a choice or not we could toggle the variables to never step into
+-- dispense_item state. Adding & choice in acc_payment solved the counterexamples.
