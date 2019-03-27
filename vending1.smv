@@ -3,6 +3,7 @@ VAR
   choice:  boolean;
   payment: boolean;
   acc_payment: boolean;
+  n_items: 0..3; -- initiated a numerical value
   state:   { ready, expect_payment, dispense_item };
 
 ASSIGN
@@ -16,7 +17,14 @@ ASSIGN
   esac;
 
   init (acc_payment) := FALSE;
-  next (acc_payment) := (state = expect_payment & payment & choice);
+  next (acc_payment) := (state = expect_payment & payment & choice & n_items > 0);
+  -- Can't acc_payment if there is no item to choose from
+
+  next (n_items) := case
+    release_item & n_items > 0 : n_items - 1; -- had to add n_items > 0 here as well for it to compile.
+    -- We thought it would be enough to have this conditional check once, but apparently not
+    TRUE: n_items;
+  esac;
 
 DEFINE
   release_item := (state = dispense_item);
