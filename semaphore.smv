@@ -35,8 +35,8 @@ MODULE user(semaphore, active)
 VAR
   state : { idle, entering, critical, exiting }; -- Specify the states of user
 
---FAIRNESS
---  state = idle; -- Makes sure that user.state will end up in idle at some point,
+FAIRNESS
+  state = idle; -- Makes sure that user.state will end up in idle at some point,
                 -- preventing a deadlock.
 
 MODULE main
