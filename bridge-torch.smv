@@ -15,7 +15,8 @@ ASSIGN
 
   next (torch) := case
     -- rule: torch can only move if carried
-    traveling[0] | traveling[1] | traveling[2] | traveling[3] : !torch
+    traveling[0] | traveling[1] | traveling[2] | traveling[3] : !torch;
+    TRUE: torch;
   esac;
 
   next (location[0]) := case
@@ -42,12 +43,92 @@ ASSIGN
 
   next(time) := case
     time > 90: 90;
+    traveling[3]: time + 10;
+    traveling[2]: time + 5;
+    traveling[1]: time + 2;
+    traveling[0]: time + 1;
+    TRUE: time;
   esac;
 
 TRANS
-  !(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2)
+  --!(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2)
+  (traveling[0] -> location[0] = torch) &
+  (traveling[1] -> location[1] = torch) &
+  (traveling[2] -> location[2] = torch) &
+  (traveling[3] -> location[3] = torch);
 
 LTLSPEC
-  !( (-- rule for valid transitions --))
-     U (-- all travelers must reach goal -- &
-        time <= --MIN--));
+  !( (!(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2) )
+     U (location[0] & location[1] & location[2] & location[3] &
+        time <= 17
+        ));
+/--
+-- specification !(!(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2) U ((((location[0] & location[1]) & location[2]) & location[3]) & time <= 17))  is false
+-- as demonstrated by the following execution sequence
+Trace Description: LTL Counterexample 
+Trace Type: Counterexample 
+  -> State: 1.1 <-
+    location[0] = FALSE
+    location[1] = FALSE
+    location[2] = FALSE
+    location[3] = FALSE
+    traveling[0] = TRUE
+    traveling[1] = TRUE
+    traveling[2] = FALSE
+    traveling[3] = FALSE
+    torch = FALSE
+    time = 0
+  -> State: 1.2 <-
+    location[0] = TRUE
+    location[1] = TRUE
+    traveling[0] = FALSE
+    torch = TRUE
+    time = 2
+  -> State: 1.3 <-
+    location[1] = FALSE
+    traveling[1] = FALSE
+    traveling[2] = TRUE
+    traveling[3] = TRUE
+    torch = FALSE
+    time = 4
+  -> State: 1.4 <-
+    location[2] = TRUE
+    location[3] = TRUE
+    traveling[0] = TRUE
+    traveling[2] = FALSE
+    traveling[3] = FALSE
+    torch = TRUE
+    time = 14
+  -> State: 1.5 <-
+    location[0] = FALSE
+    traveling[1] = TRUE
+    torch = FALSE
+    time = 15
+  -> State: 1.6 <-
+    location[0] = TRUE
+    location[1] = TRUE
+    traveling[1] = FALSE
+    torch = TRUE
+    time = 17
+  -- Loop starts here
+  -> State: 1.7 <-
+    location[0] = FALSE
+    traveling[0] = FALSE
+    torch = FALSE
+    time = 18
+  -> State: 1.8 <-
+--/
+
+
+/--
+  This was the optimum transiton with respect to time.
+
+  LEFT    RIGHT   TIME
+
+  0123    ----    t:0
+  --23    01--    t:2
+  -123    0---    t:4
+  -1--    0-23    t:14
+  01--    --23    t:15
+  ----    1234    t:17
+--/
