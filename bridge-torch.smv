@@ -6,11 +6,11 @@ VAR
   time: 0..100;
 
 ASSIGN
-  init (location[0]) := FALSE;
-  init (location[1]) := FALSE;
-  init (location[2]) := FALSE;
-  init (location[3]) := FALSE;
-  init (torch) := FALSE;
+  init (location[0]) := FALSE; -- Set default location to left
+  init (location[1]) := FALSE; -- Set default location to left
+  init (location[2]) := FALSE; -- Set default location to left
+  init (location[3]) := FALSE; -- Set default location to left
+  init (torch) := FALSE;  -- Set default location to left
   init (time) := 0;
 
   next (torch) := case
@@ -26,38 +26,43 @@ ASSIGN
   esac;
 
   next (location[1]) := case
-    -- copy rule from above and change index
+    -- rule: location changes if "1" is traveling
     traveling[1] & torch = location[1]: !location[1];
     TRUE: location[1];
   esac;
 
   next (location[2]) := case
+  -- rule: location changes if "2" is traveling
     traveling[2] & torch = location[2]: !location[2];
     TRUE: location[2];
   esac;
 
   next (location[3]) := case
+  -- rule: location changes if "3" is traveling
     traveling[3] & torch = location[3]: !location[3];
     TRUE: location[3];
   esac;
 
+  -- Update time
   next(time) := case
     time > 90: 90;
-    traveling[3]: time + 10;
-    traveling[2]: time + 5;
-    traveling[1]: time + 2;
-    traveling[0]: time + 1;
+    traveling[3]: time + 10; -- Person 3 takes 10 minutes cross
+    traveling[2]: time + 5; -- Person 2 takes 5 minutes cross
+    traveling[1]: time + 2; -- Person 1 takes 2 minutes cross
+    traveling[0]: time + 1; -- Person 0 takes 1 minutes cross
     TRUE: time;
   esac;
 
 TRANS
-  --!(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2)
+  -- Can only move with the torch
   (traveling[0] -> location[0] = torch) &
   (traveling[1] -> location[1] = torch) &
   (traveling[2] -> location[2] = torch) &
   (traveling[3] -> location[3] = torch);
 
 LTLSPEC
+  -- No more than 2 people can move at the same time
+  -- Reach goal under time limit
   !( (!(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2) )
      U (location[0] & location[1] & location[2] & location[3] &
         time <= 17
@@ -65,8 +70,8 @@ LTLSPEC
 /--
 -- specification !(!(count(traveling[0], traveling[1], traveling[2], traveling[3]) > 2) U ((((location[0] & location[1]) & location[2]) & location[3]) & time <= 17))  is false
 -- as demonstrated by the following execution sequence
-Trace Description: LTL Counterexample 
-Trace Type: Counterexample 
+Trace Description: LTL Counterexample
+Trace Type: Counterexample
   -> State: 1.1 <-
     location[0] = FALSE
     location[1] = FALSE
