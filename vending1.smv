@@ -1,3 +1,7 @@
+/--
+  GROUP: 18
+--/
+
 MODULE main -- The vending machine's MVP is this one module
 VAR
   choice:  boolean; -- Toggle for costumer having made a choice or not
