@@ -1,23 +1,27 @@
-MODULE main
+/--
+  GROUP: 18
+--/
+
+MODULE main -- The vending machine's MVP is this one module
 VAR
-  choice:  boolean;
-  payment: boolean;
-  acc_payment: boolean;
-  n_items: 0..3; -- initiated a numerical value
+  choice:  boolean; -- Toggle for costumer having made a choice or not
+  payment: boolean; -- The costumer has payed
+  acc_payment: boolean; -- Can accept payment (every condition is fullfilled)
+  n_items: 0..3; -- initiated a numerical value -- Stock counter of the item in store.
   state:   { ready, expect_payment, dispense_item };
 
 ASSIGN
-  init (state) := ready;
+  init (state) := ready; -- The machine is ready for a costumer at its initial state.
   next (state) := case
-		    state = ready          & choice:  expect_payment;
-		    state = expect_payment & acc_payment: dispense_item;
-		    state = expect_payment & !choice: ready;
-		    state = dispense_item:	      ready;
+		    state = ready          & choice:  expect_payment; -- If the vending machine is ready and a costumer has made a choice, we expect the payment
+		    state = expect_payment & acc_payment: dispense_item; -- When the payment is accepted of what we expect, we drop the item.
+		    state = expect_payment & !choice: ready; -- If the costumer regrets his choice, go back to the vending machines initial state
+		    state = dispense_item:	      ready; -- Go back to initial state when item has been dispensed.
 		    TRUE:                             state;
   esac;
 
-  init (acc_payment) := FALSE;
-  next (acc_payment) := (state = expect_payment & payment & choice & n_items > 0);
+  init (acc_payment) := FALSE; -- Can't accept payment at start before knowing what the costumer wants and what amount to pay.
+  next (acc_payment) := (state = expect_payment & payment & choice & n_items > 0); -- Will only accept payment if a choice is made, payment is complete and there exists at least one ofthe item in stock.
   -- Can't acc_payment if there is no item to choose from
 
   next (n_items) := case

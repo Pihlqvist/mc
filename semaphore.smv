@@ -1,46 +1,89 @@
+/--
+  GROUP: 18
+
+  ERROR TRASE WHEN FAIRNESS IS NOT USED:
+      -- specification AG !(proc1.state = critical & proc2.state = critical)  is true
+      -- specification AG (proc1.state = entering -> AF proc1.state = critical)  is false
+      -- as demonstrated by the following execution sequence
+      Trace Description: CTL Counterexample 
+      Trace Type: Counterexample 
+        -> State: 1.1 <-
+          semaphore = FALSE
+          running = 0
+          proc1.state = idle
+          proc2.state = idle
+        -> State: 1.2 <-
+          proc1.state = entering
+        -- Loop starts here
+        -> State: 1.3 <-
+          semaphore = TRUE
+          running = 1
+        -> State: 1.4 <-
+
+  We can see that proc1 (running=0) is in the state entering. This means that the
+  semaphore will be taken. The next state changes the running variable to 1 and 
+  now proc2 is running. Proc2 can't enter because of the semaphore and beacuse 
+  FAIRNESS is not active, nothing stops running = 1 forever.
+
+  Our FAIRNESS ensures that a user will eventaully end up in a idle state, mening
+  that other processes will be able to use the critical resource. 
+
+--/
+
+
 MODULE user(semaphore, active)
 VAR
-  state : { idle, entering, critical, exiting };
+  state : { idle, entering, critical, exiting }; -- Specify the states of user
 
+FAIRNESS
+  state = idle; -- Makes sure that user.state will end up in idle at some point,
+                -- preventing a deadlock.
 
 MODULE main
 VAR
-  semaphore : boolean;
-  running : 0..1;
+  semaphore : boolean; -- critical state key
+  running : 0..1;      -- Specifies which process is running
+  -- process 1 and 2 have diffrent active booleans but same global semaphore
   proc1 : user(semaphore, next(running) = 0);
   proc2 : user(semaphore, next(running) = 1);
 ASSIGN
   init(semaphore) := FALSE;
+  -- init to idle to ensure they dont both take critical
   init(proc1.state) := idle;
   init(proc2.state) := idle;
 
   next(proc1.state) := case
     !(proc1.active) : proc1.state; -- state transitions only fire when active
-    proc1.state = idle : { idle, entering };
-    --proc1.state = entering & semaphore : idle;
-    proc1.state = entering & !semaphore : critical;
-    proc1.state = critical : { critical, exiting };
-    proc1.state = exiting : idle;
+    proc1.state = idle : { idle, entering }; -- If we are idle, we can enter or stay put
+    proc1.state = entering & !semaphore : critical; -- When we want to enter we can 
+                                                    -- go to critical if the sempahore is
+                                                    -- not in use
+    proc1.state = critical : { critical, exiting }; -- Stay in critical or exit.
+    proc1.state = exiting : idle;                   -- When we exit we go to idle
     TRUE : proc1.state;
   esac;
 
   next(proc2.state) := case
     !(proc2.active) : proc2.state; -- state transitions only fire when active
-    proc2.state = idle : { idle, entering };
-    --proc2.state = entering & semaphore : idle;
-    proc2.state = entering & !semaphore : critical;
-    proc2.state = critical : { critical, exiting };
-    proc2.state = exiting : idle;
+    proc2.state = idle : { idle, entering }; -- If we are idle, we can enter or stay put
+    proc2.state = entering & !semaphore : critical; -- When we want to enter we can 
+                                                    -- go to critical if the sempahore is
+                                                    -- not in use
+    proc2.state = critical : { critical, exiting }; -- Stay in critical or exit.
+    proc2.state = exiting : idle;                   -- When we exit we go to idle
     TRUE : proc2.state;
   esac;
 
   next(semaphore) := case
+    -- semaphore is taken when we are in state entering and critical
     proc1.state = entering | proc1.state = critical: TRUE;
     proc2.state = entering | proc2.state = critical: TRUE;
+    -- semaphore is released when we exit the cirtical area
     proc1.state = exiting : FALSE;
     proc2.state = exiting : FALSE;
     TRUE : semaphore;
   esac;
+
 
 SPEC AG !(proc1.state = critical & proc2.state = critical); -- safety
 
