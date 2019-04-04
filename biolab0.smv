@@ -109,7 +109,7 @@ MODULE Airlock(inner_door, outer_door, inner_buttons, outer_buttons, cleaning)
         -- Describe when the state becomes "dirty" (or "clean")
         inner_door = open : dirty;
         next(inner_door) = open : dirty;  -- Needed to ensure   -- REQ: The next state of the airlock is always "dirty" if the inner door is open
-        outer_door = closed & inner_door = closed : clean;
+        outer_door = closed & inner_door = closed & cleaning : clean;
         TRUE : state;
       esac;
 
@@ -204,6 +204,7 @@ FAIRNESS
   -- REQ: A dirty airlock remains dirty if one of the doors is open or
   -- "cleaning" is false
   INVARSPEC ( airlock.state = dirty & (inner_door.status = open | outer_door.status = open) -> next(airlock.state = dirty) )
+  INVARSPEC ( airlock.state = dirty & !cleaning -> next(airlock.state = dirty))
 ---------------------------------------------------------------------------
 
 
