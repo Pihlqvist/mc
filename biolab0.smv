@@ -200,3 +200,39 @@ FAIRNESS
   -- REQ: A dirty airlock remains dirty if one of the doors is open or
   -- "cleaning" is false
 ---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+-- Documented error trace of incorrect property
+-- We allowed property 5. to be violated, mening that the inner door could be in an
+-- open state without the airlock being dirty. To do this we removed one case in the 
+-- state transition in airlock. 
+---------------------------------------------------------------------------
+
+/--
+-- invariant (((inner_buttons.pressed & outer_buttons.pressed) & outer_door.status = closed) -> (next(inner_door.status) = open & !(next(outer_door.status) = open)))  is true
+-- invariant (inner_door.status = open -> airlock.state = dirty)  is false
+-- as demonstrated by the following execution sequence
+Trace Description: AG alpha Counterexample 
+Trace Type: Counterexample 
+  -> State: 1.1 <-
+    inner_door.status = closed
+    outer_door.status = closed
+    inner_buttons.pressed = FALSE
+    outer_buttons.pressed = FALSE
+    cleaning = FALSE
+    airlock.state = clean
+    airlock.inner_door_cmd = nop
+    airlock.outer_door_cmd = nop
+    airlock.reset_inner = FALSE
+    airlock.reset_outer = FALSE
+  -> State: 1.2 <-
+    inner_buttons.pressed = TRUE
+    airlock.inner_door_cmd = open       -- next state should leave the airlock dirty
+  -> State: 1.3 <-
+    inner_door.status = open 
+    airlock.inner_door_cmd = nop        -- Airlock should be dirty in this state beacuse 
+                                        -- inner_door.status = open. Meaning that 
+                                        -- airlock.state should have been assignd dirty
+    airlock.reset_inner = TRUE
+--/
