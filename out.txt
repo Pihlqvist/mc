@@ -1,0 +1,37 @@
+*** This is NuSMV 2.6.0 (compiled on Wed Oct 14 15:36:56 2015)
+*** Enabled addons are: compass
+*** For more information on NuSMV see <http://nusmv.fbk.eu>
+*** or email to <nusmv-users@list.fbk.eu>.
+*** Please report bugs to <Please report bugs to <nusmv-users@fbk.eu>>
+
+*** Copyright (c) 2010-2014, Fondazione Bruno Kessler
+
+*** This version of NuSMV is linked to the CUDD library version 2.4.1
+*** Copyright (c) 1995-2004, Regents of the University of Colorado
+
+*** This version of NuSMV is linked to the MiniSat SAT solver. 
+*** See http://minisat.se/MiniSat.html
+*** Copyright (c) 2003-2006, Niklas Een, Niklas Sorensson
+*** Copyright (c) 2007-2010, Niklas Sorensson
+
+-- specification !(AF inner_door.status = open)  is true
+-- specification !(AF outer_door.status = open)  is true
+-- specification !(AG inner_buttons.pressed)  is true
+-- specification !(AG outer_buttons.pressed)  is true
+-- invariant (door_cmd = open -> status = closed) IN inner_door is true
+-- invariant (door_cmd = close -> status = open) IN inner_door is true
+-- invariant (door_cmd = open -> status = closed) IN outer_door is true
+-- invariant (door_cmd = close -> status = open) IN outer_door is true
+-- invariant (reset -> pressed) IN inner_buttons is true
+-- invariant (reset -> pressed) IN outer_buttons is true
+-- invariant !(inner_door.status = open & outer_door.status = open)  is true
+-- invariant ((inner_door.status = closed & next(inner_door.status) = open) -> inner_buttons.pressed)  is true
+-- invariant ((outer_door.status = closed & next(outer_door.status) = open) -> outer_buttons.pressed)  is true
+-- invariant (((inner_buttons.pressed & outer_buttons.pressed) & outer_door.status = closed) -> (next(inner_door.status) = open & !(next(outer_door.status) = open)))  is true
+-- invariant (inner_door.status = open -> airlock.state = dirty)  is true
+-- invariant (inner_door.status = open -> next(airlock.state) = dirty)  is true
+-- invariant (airlock.state = dirty -> !(airlock.outer_door_cmd = open))  is true
+-- invariant (airlock.reset_inner -> inner_door.status = open)  is true
+-- invariant (airlock.reset_outer -> outer_door.status = open)  is true
+-- invariant ((inner_buttons.pressed & inner_door.status = open) -> !next(inner_buttons.pressed))  is true
+-- invariant ((outer_buttons.pressed & outer_door.status = open) -> !next(outer_buttons.pressed))  is true

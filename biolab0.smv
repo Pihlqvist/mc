@@ -194,16 +194,22 @@ FAIRNESS
 ---------------------------------------------------------------------------
 
   -- REQ: No pressed button can be reset until the door opens.
+  INVARSPEC ( airlock.reset_inner -> inner_door.status = open )
+  INVARSPEC ( airlock.reset_outer -> outer_door.status = open )
 
   -- REQ: A button must be reset as soon as the door opens
+  INVARSPEC ( inner_buttons.pressed & inner_door.status = open -> !next(inner_buttons.pressed) )
+  INVARSPEC ( outer_buttons.pressed & outer_door.status = open -> !next(outer_buttons.pressed) )
 
   -- REQ: A dirty airlock remains dirty if one of the doors is open or
   -- "cleaning" is false
+  INVARSPEC ( airlock.state = dirty & (inner_door.status = open | outer_door.status = open) -> next(airlock.state = dirty) )
 ---------------------------------------------------------------------------
 
 
 ---------------------------------------------------------------------------
--- Documented error trace of incorrect property
+-- Documented error trace of incorrect model
+
 -- We allowed property 5. to be violated, mening that the inner door could be in an
 -- open state without the airlock being dirty. To do this we removed one case in the 
 -- state transition in airlock. 
@@ -236,3 +242,4 @@ Trace Type: Counterexample
                                         -- airlock.state should have been assignd dirty
     airlock.reset_inner = TRUE
 --/
+---------------------------------------------------------------------------
