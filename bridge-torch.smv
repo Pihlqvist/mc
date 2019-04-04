@@ -1,3 +1,7 @@
+/--
+  Group: 18
+--/
+
 MODULE main
 VAR
   location : array 0..3 of boolean; -- A,B,C,D
@@ -123,7 +127,6 @@ Trace Type: Counterexample
     time = 18
   -> State: 1.8 <-
 --/
-
 
 /--
   This was the optimum transiton with respect to time.

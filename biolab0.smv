@@ -87,7 +87,8 @@ MODULE Airlock(inner_door, outer_door, inner_buttons, outer_buttons, cleaning)
       case
         -- Specify when the door should open or close
         inner_door = open : nop;
-        inner_door = closed & outer_buttons & state = clean : open;
+        inner_buttons : nop;  -- Added to make the inner door take precedence
+        inner_door = closed & outer_buttons & state = clean & outer_door = closed : open;
         outer_door = open & !outer_buttons : close;
         TRUE : nop;
       esac;
@@ -97,7 +98,7 @@ MODULE Airlock(inner_door, outer_door, inner_buttons, outer_buttons, cleaning)
       case
         -- Specify when the door should open or close
         outer_door = open : nop;
-        outer_door = closed & inner_buttons : open;
+        outer_door = closed & inner_buttons & inner_door = closed : open;
         inner_door = open & !inner_buttons : close;
         TRUE : nop;
       esac;
@@ -107,6 +108,7 @@ MODULE Airlock(inner_door, outer_door, inner_buttons, outer_buttons, cleaning)
       case
         -- Describe when the state becomes "dirty" (or "clean")
         inner_door = open : dirty;
+        next(inner_door) = open : dirty;  -- Needed to ensure   -- REQ: The next state of the airlock is always "dirty" if the inner door is open
         outer_door = closed & inner_door = closed : clean;
         TRUE : state;
       esac;
@@ -152,26 +154,31 @@ FAIRNESS
 
   -- REQ: A door only opens if a button is pressed
 
+  INVARSPEC ( inner_door.status = closed & next(inner_door.status) = open -> inner_buttons.pressed )
+  INVARSPEC ( outer_door.status = closed & next(outer_door.status) = open -> outer_buttons.pressed )
+  /--  OLD NOT WORKING CODE
   INVARSPEC (inner_door.status = open -> inner_buttons.pressed)
   INVARSPEC (outer_door.status = open -> outer_buttons.pressed)
+  --/
 
   -- REQ: If both buttons are pressed, the inner door should take precedence
 
-  INVARSPEC ((inner_buttons.pressed & outer_buttons.pressed) -> (inner_door.status = open & outer_door.status = closed))
+  INVARSPEC ((inner_buttons.pressed & outer_buttons.pressed & outer_door.status = closed) 
+            -> (next(inner_door.status) = open & !(next(outer_door.status) = open)))
 
   -- REQ: Either door must eventually open (i.e., for either door,
   -- there must eventually occur a state where it is open).
 
-  --INVARSPEC (!(AF (inner_door.status = open) ))
-  -- INVARSPEC (!(AF (outer_door.status = open) ))
+  SPEC (!(AF (inner_door.status = open) ))
+  SPEC (!(AF (outer_door.status = open) ))
 
   -- REQ: The state of the airlock is always "dirty" if the inner door is open
 
-  --INVARSPEC (inner_door.state = open -> airlock.state = dirty)
+  INVARSPEC (inner_door.status = open -> airlock.state = dirty)
 
   -- REQ: The next state of the airlock is always "dirty" if the inner door is open
 
-  --INVARSPEC (inner_door.state = open -> next(airlock.state) = dirty)
+  INVARSPEC (inner_door.status = open -> next(airlock.state) = dirty)
 
   -- REQ: The outer door never opens for a dirty airlock
 
@@ -179,8 +186,8 @@ FAIRNESS
 
   -- REQ: No button can reach a state where it remains pressed forever.
 
-  -- INVARSPEC !(AG(next(inner_buttons.pressed)))
-  -- INVARSPEC !(AG(next(outer_buttons.pressed)))
+  SPEC !(AG(inner_buttons.pressed))
+  SPEC !(AG(outer_buttons.pressed))
 
 ---------------------------------------------------------------------------
 -- Advanced properties for higher grades --
