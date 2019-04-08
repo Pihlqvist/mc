@@ -68,21 +68,25 @@ MODULE Door(door_cmd)
 -- Flag "cleaning" indicates if the airlock itself is being cleaned,
 -- so a "dirty" airlock can again be clean again in the next state.
 
-MODULE Airlock(inner_door, outer_door, inner_buttons_i, inner_buttons_o, outer_buttons_i, outer_buttons_i)
+MODULE Airlock(inner_door, outer_door, inner_buttons_i, inner_buttons_o, outer_buttons_i, outer_buttons_o)
   VAR
     state: { clean, dirty };
     inner_door_cmd : {open, close, nop};
     outer_door_cmd : {open, close, nop};
-    reset_inner : boolean;
-    reset_outer : boolean;
+    reset_inner_i : boolean;
+    reset_outer_i : boolean;
+    reset_inner_o : boolean;
+    reset_outer_o : boolean;
     cleaning : boolean;
     access : {normal, evac};
 
   -- Button is reset only if it is pressed and the door is open.
 
   ASSIGN
-    reset_inner := (inner_buttons & inner_door = open);
-    reset_outer := (outer_buttons & outer_door = open);
+    reset_inner_i := (inner_buttons_i & inner_door = open);
+    reset_inner_o := ((inner_buttons_o & inner_door = open) | access = evac);
+    reset_outer_i := (outer_buttons_i & outer_door = open);
+    reset_outer_o := ((outer_buttons_o & outer_door = open) | access = evac);
     
   ASSIGN
     cleaning :=
@@ -99,8 +103,8 @@ MODULE Airlock(inner_door, outer_door, inner_buttons_i, inner_buttons_o, outer_b
         access = evac & outer_buttons_i & inner_door = closed & outer_door = closed & state = clean : open; -- We can open from _i
         
         inner_door = open : nop;
-        inner_buttons : nop;  -- Added to make the inner door take precedence
-        outer_door = open & !outer_buttons : close;
+        inner_buttons_i | inner_buttons_o : nop;  -- Added to make the inner door take precedence
+        outer_door = open & !(outer_buttons_i | outer_buttons_o) : close;
         access = evac : nop;  -- The below cases don't apply if we are in evac 
 
         inner_door = closed & (outer_buttons_i | outer_buttons_o) & state = clean & outer_door = closed : open;
@@ -114,7 +118,7 @@ MODULE Airlock(inner_door, outer_door, inner_buttons_i, inner_buttons_o, outer_b
         access = evac & inner_buttons_i & outer_door = closed & inner_door = closed : open; -- We can open from _i 
         
         outer_door = open : nop;
-        inner_door = open & !inner_buttons : close;
+        inner_door = open & !(inner_buttons_i | inner_buttons_o) : close;
         access = evac : nop;  -- The below cases don't apply if we are in evac 
         outer_door = closed & (inner_buttons_i | inner_buttons_o) & inner_door = closed : open;
 
@@ -142,13 +146,13 @@ MODULE main
     inner_door   : Door(airlock.inner_door_cmd);
     outer_door   : Door(airlock.outer_door_cmd);
 
-    inner_buttons_i : Button(airlock.reset_inner);
-    inner_buttons_o : Button(airlock.reset_inner);
-    outer_buttons_i : Button(airlock.reset_outer);
-    outer_buttons_o : Button(airlock.reset_outer);
+    inner_buttons_i : Button(airlock.reset_inner_i);
+    inner_buttons_o : Button(airlock.reset_inner_o);
+    outer_buttons_i : Button(airlock.reset_outer_i);
+    outer_buttons_o : Button(airlock.reset_outer_o);
 
-    inner_buttons: boolean;
-    outer_buttons: boolean;
+    --inner_buttons: boolean;
+    --outer_buttons: boolean;
     --cleaning     : boolean;
     airlock : Airlock(inner_door.status, outer_door.status,
                 inner_buttons_i.pressed, inner_buttons_o.pressed,
@@ -156,8 +160,8 @@ MODULE main
 		--,cleaning);
 
   DEFINE
-    inner_buttons := inner_buttons_i | inner_buttons_o;
-    outer_buttons := outer_buttons_i | outer_buttons_o;
+    inner_buttons := inner_buttons_i.pressed | inner_buttons_o.pressed;
+    outer_buttons := outer_buttons_i.pressed | outer_buttons_o.pressed;
 
 FAIRNESS
   inner_buttons_i.pressed;
@@ -191,8 +195,8 @@ FAIRNESS
 
   -- REQ: A door only opens if a button is pressed
 
-  INVARSPEC ( inner_door.status = closed & next(inner_door.status) = open -> inner_buttons.pressed )
-  INVARSPEC ( outer_door.status = closed & next(outer_door.status) = open -> outer_buttons.pressed )
+  INVARSPEC ( inner_door.status = closed & next(inner_door.status) = open -> inner_buttons )
+  INVARSPEC ( outer_door.status = closed & next(outer_door.status) = open -> outer_buttons )
   /--  OLD NOT WORKING CODE
   INVARSPEC (inner_door.status = open -> inner_buttons.pressed)
   INVARSPEC (outer_door.status = open -> outer_buttons.pressed)
@@ -223,25 +227,33 @@ FAIRNESS
 
   -- REQ: No button can reach a state where it remains pressed forever.
 
-  SPEC !(AG(inner_buttons.pressed))
-  SPEC !(AG(outer_buttons.pressed))
+  SPEC !(AG(inner_buttons))
+  SPEC !(AG(outer_buttons))
 
 ---------------------------------------------------------------------------
 -- Advanced properties for higher grades --
 ---------------------------------------------------------------------------
 
   -- REQ: No pressed button can be reset until the door opens.
-  INVARSPEC ( airlock.reset_inner -> inner_door.status = open )
-  INVARSPEC ( airlock.reset_outer -> outer_door.status = open )
+  INVARSPEC ( airlock.reset_inner_i -> inner_door.status = open )
+  INVARSPEC ( airlock.reset_outer_i -> outer_door.status = open )
+  -- Evac
+  INVARSPEC ( airlock.reset_inner_o -> inner_door.status = open | airlock.access = evac )
+  INVARSPEC ( airlock.reset_outer_o -> outer_door.status = open | airlock.access = evac )
 
   -- REQ: A button must be reset as soon as the door opens
-  INVARSPEC ( inner_buttons.pressed & inner_door.status = open -> !next(inner_buttons.pressed) )
-  INVARSPEC ( outer_buttons.pressed & outer_door.status = open -> !next(outer_buttons.pressed) )
+  INVARSPEC ( inner_buttons & inner_door.status = open -> !next(inner_buttons) )
+  INVARSPEC ( outer_buttons & outer_door.status = open -> !next(outer_buttons) )
 
   -- REQ: A dirty airlock remains dirty if one of the doors is open or
   -- "cleaning" is false
   INVARSPEC ( airlock.state = dirty & (inner_door.status = open | outer_door.status = open) -> next(airlock.state = dirty) )
   INVARSPEC ( airlock.state = dirty & !airlock.cleaning -> next(airlock.state = dirty))
+
+  -- REQ: The doors never open on a push of an outside button as long as the mode of the airlock is “evac”
+  INVARSPEC ( airlock.access = evac & outer_buttons_o.pressed & !outer_buttons_i.pressed -> !(airlock.outer_door_cmd = open) )
+  INVARSPEC ( airlock.access = evac & inner_buttons_o.pressed & !inner_buttons_i.pressed -> !(airlock.inner_door_cmd = open) )
+
 ---------------------------------------------------------------------------
 
 ---------------------------------------------------------------------------
