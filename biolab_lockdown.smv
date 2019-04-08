@@ -333,8 +333,9 @@ Trace Type: Counterexample
 ---------------------------------------------------------------------------
 -- Documented error trace of incorrect property
 
--- We negated the first property, we now have a property that wants the reset 
--- status
+-- We changed the first advanced property that says that when reset button is toggled,
+-- the door status must be open to closed. This means that when the reset is triggered now,
+-- it expects the door to be closd, but it is in fact open due to how our model is defined. 
 ---------------------------------------------------------------------------
 /--
 -- invariant (airlock.reset_inner_i -> inner_door.status = closed)  is false
