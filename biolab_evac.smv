@@ -178,6 +178,12 @@ FAIRNESS
 FAIRNESS
   outer_buttons_o.pressed;
 
+FAIRNESS
+  inner_door.status = open;
+
+FAIRNESS
+  outer_door.status = open;
+
 --FAIRNESS
 --  cleaning;
 
@@ -211,8 +217,8 @@ FAIRNESS
   -- REQ: Either door must eventually open (i.e., for either door,
   -- there must eventually occur a state where it is open).
 
-  SPEC (!(AF (inner_door.status = open) ))
-  SPEC (!(AF (outer_door.status = open) ))
+  SPEC ((AF (inner_door.status = open) ))
+  SPEC ((AF (outer_door.status = open) ))
 
   -- REQ: The state of the airlock is always "dirty" if the inner door is open
 
